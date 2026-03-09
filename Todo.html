@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To Do App</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
+
+body{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#f30e69,#764ba2);
+}
+
+.container{
+background:white;
+padding:30px;
+width:350px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+text-align:center;
+}
+
+h1{
+margin-bottom:20px;
+color:#333;
+}
+
+.input-area{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+input{
+flex:1;
+padding:10px;
+border-radius:8px;
+border:1px solid #ccc;
+outline:none;
+}
+
+button{
+padding:10px 15px;
+border:none;
+border-radius:8px;
+background:#66eab5;
+color:white;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+background:#0a7e5f;
+}
+
+ul{
+list-style:none;
+}
+
+li{
+background:#f4f4f4;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+animation:fade 0.3s ease;
+}
+
+li span{
+cursor:pointer;
+color:red;
+font-weight:bold;
+}
+
+.completed{
+text-decoration:line-through;
+opacity:0.6;
+}
+
+@keyframes fade{
+from{
+opacity:0;
+transform:translateY(-5px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>My To-Do List</h1>
+
+<div class="input-area">
+<input type="text" id="taskInput" placeholder="Enter a task...">
+<button onclick="addTask()">Add</button>
+</div>
+
+<ul id="taskList"></ul>
+
+</div>
+
+<script>
+
+function addTask(){
+
+let input = document.getElementById("taskInput");
+let task = input.value.trim();
+
+if(task === "") return;
+
+let li = document.createElement("li");
+li.textContent = task;
+
+li.onclick = function(){
+li.classList.toggle("completed");
+}
+
+let deleteBtn = document.createElement("span");
+deleteBtn.textContent = "✖";
+
+deleteBtn.onclick = function(e){
+e.stopPropagation();
+li.remove();
+}
+
+li.appendChild(deleteBtn);
+
+document.getElementById("taskList").appendChild(li);
+
+input.value="";
+
+}
+
+</script>
+
+</body>
+</html>

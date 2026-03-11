@@ -1,0 +1,375 @@
+import { useState, useEffect } from "react";
+
+const FILTERS = ["All", "Active", "Done"];
+const MOODS = ["🌸", "🌼", "🍀", "🦋", "🌈", "⭐", "🍓", "🎀"];
+
+export default function TodoApp() {
+  const [tasks, setTasks] = useState([
+    { id: 1, text: "Drink 8 glasses of water 💧", done: false, emoji: "🌸" },
+    { id: 2, text: "Go for a morning walk 🌤️", done: true, emoji: "🌼" },
+    { id: 3, text: "Call a friend 📞", done: false, emoji: "🦋" },
+  ]);
+  const [input, setInput] = useState("");
+  const [filter, setFilter] = useState("All");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  const addTask = () => {
+    if (!input.trim()) return;
+    const emoji = MOODS[Math.floor(Math.random() * MOODS.length)];
+    setTasks([...tasks, { id: Date.now(), text: input.trim(), done: false, emoji }]);
+    setInput("");
+  };
+
+  const toggleTask = (id) =>
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+
+  const deleteTask = (id) => setTasks(tasks.filter((t) => t.id !== id));
+
+  const filtered = tasks.filter((t) =>
+    filter === "All" ? true : filter === "Done" ? t.done : !t.done
+  );
+
+  const doneCount = tasks.filter((t) => t.done).length;
+  const percent = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
+  const mood = percent === 100 ? "You're amazing! 🎉" : percent >= 50 ? "Keep going! 💪" : "Let's do this! 🌟";
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;500;600;700&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { min-height: 100vh; background: #fff5f9; font-family: 'Nunito', sans-serif; }
+
+        .app {
+          min-height: 100vh;
+          width: 100vw;
+          background: linear-gradient(160deg, #fff0f6 0%, #f0f9ff 50%, #f5fff0 100%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 2.5rem 1.5rem 4rem;
+          position: relative;
+          overflow-x: hidden;
+          opacity: ${mounted ? 1 : 0};
+          transition: opacity 0.5s ease;
+        }
+
+        .blob {
+          position: fixed;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 0;
+          animation: floatBlob 6s ease-in-out infinite;
+        }
+        .blob1 { width: 350px; height: 350px; background: rgba(255,182,217,0.25); top: -80px; left: -80px; animation-delay: 0s; }
+        .blob2 { width: 280px; height: 280px; background: rgba(167,243,208,0.25); bottom: -60px; right: -60px; animation-delay: 2s; }
+        .blob3 { width: 200px; height: 200px; background: rgba(199,210,254,0.3); top: 40%; right: -40px; animation-delay: 4s; }
+        .blob4 { width: 150px; height: 150px; background: rgba(254,240,138,0.35); bottom: 20%; left: -20px; animation-delay: 1s; }
+
+        @keyframes floatBlob {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        .container { width: 100%; max-width: 600px; position: relative; z-index: 1; }
+
+        .header { text-align: center; margin-bottom: 2rem; }
+
+        .crown { font-size: 2.5rem; animation: wiggle 2s ease-in-out infinite; display: block; margin-bottom: 0.25rem; }
+
+        @keyframes wiggle {
+          0%, 100% { transform: rotate(-5deg); }
+          50% { transform: rotate(5deg); }
+        }
+
+        .title {
+          font-family: 'Fredoka One', cursive;
+          font-size: clamp(2.2rem, 6vw, 3.5rem);
+          background: linear-gradient(135deg, #f472b6, #fb923c, #facc15);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          line-height: 1.1;
+        }
+
+        .mood-tag {
+          display: inline-block;
+          margin-top: 0.6rem;
+          background: white;
+          border-radius: 99px;
+          padding: 0.3rem 1rem;
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #f472b6;
+          box-shadow: 0 2px 12px rgba(244,114,182,0.2);
+        }
+
+        .progress-card {
+          background: white;
+          border-radius: 20px;
+          padding: 1.25rem 1.5rem;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 4px 24px rgba(244,114,182,0.1);
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .progress-circle {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: conic-gradient(#f472b6 ${percent * 3.6}deg, #fce7f3 0deg);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: background 0.5s;
+        }
+
+        .progress-inner {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: #f472b6;
+        }
+
+        .progress-info { flex: 1; }
+        .progress-info h3 { font-size: 1rem; font-weight: 800; color: #1f2937; }
+        .progress-info p { font-size: 0.8rem; color: #9ca3af; margin-top: 0.1rem; }
+
+        .progress-bar { height: 8px; background: #fce7f3; border-radius: 99px; overflow: hidden; margin-top: 0.4rem; }
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #f472b6, #fb923c);
+          border-radius: 99px;
+          transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+          width: ${percent}%;
+        }
+
+        .input-card {
+          background: white;
+          border-radius: 20px;
+          padding: 1rem;
+          margin-bottom: 1.25rem;
+          box-shadow: 0 4px 24px rgba(244,114,182,0.1);
+          display: flex;
+          gap: 0.75rem;
+        }
+
+        .input-box {
+          flex: 1;
+          border: 2px solid #fce7f3;
+          border-radius: 14px;
+          padding: 0.8rem 1rem;
+          font-family: 'Nunito', sans-serif;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: #374151;
+          outline: none;
+          transition: border-color 0.2s;
+          background: #fff9fb;
+        }
+
+        .input-box::placeholder { color: #f9a8d4; font-weight: 500; }
+        .input-box:focus { border-color: #f472b6; background: white; }
+
+        .add-btn {
+          background: linear-gradient(135deg, #f472b6, #fb923c);
+          border: none;
+          border-radius: 14px;
+          padding: 0.8rem 1.25rem;
+          color: white;
+          font-family: 'Fredoka One', cursive;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: transform 0.15s, box-shadow 0.15s;
+          box-shadow: 0 4px 14px rgba(244,114,182,0.4);
+          white-space: nowrap;
+        }
+
+        .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(244,114,182,0.5); }
+        .add-btn:active { transform: scale(0.96); }
+
+        .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: center; }
+
+        .filter-btn {
+          background: white;
+          border: 2px solid #fce7f3;
+          border-radius: 99px;
+          padding: 0.4rem 1.1rem;
+          color: #9ca3af;
+          font-family: 'Nunito', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+          background: linear-gradient(135deg, #f472b6, #fb923c);
+          border-color: transparent;
+          color: white;
+          box-shadow: 0 3px 10px rgba(244,114,182,0.35);
+          transform: scale(1.05);
+        }
+
+        .task-list { display: flex; flex-direction: column; gap: 0.6rem; }
+
+        .task-item {
+          background: white;
+          border-radius: 18px;
+          padding: 1rem 1.25rem;
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+          box-shadow: 0 2px 12px rgba(244,114,182,0.08);
+          border: 2px solid transparent;
+          transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+          animation: popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+
+        @keyframes popIn {
+          from { opacity: 0; transform: scale(0.85) translateY(10px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .task-item:hover { transform: translateY(-2px); border-color: #fce7f3; box-shadow: 0 6px 20px rgba(244,114,182,0.15); }
+        .task-item.done-item { background: #fffbfe; }
+
+        .task-emoji { font-size: 1.3rem; flex-shrink: 0; }
+
+        .check-btn {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          border: 2.5px solid #f9a8d4;
+          background: none;
+          cursor: pointer;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.8rem;
+          transition: all 0.25s;
+          color: white;
+        }
+
+        .check-btn.done {
+          background: linear-gradient(135deg, #f472b6, #fb923c);
+          border-color: transparent;
+        }
+
+        .task-text { flex: 1; font-size: 0.95rem; font-weight: 600; color: #374151; transition: all 0.3s; }
+        .task-text.done { text-decoration: line-through; color: #d1d5db; }
+
+        .del-btn {
+          background: none;
+          border: none;
+          font-size: 1rem;
+          cursor: pointer;
+          color: #fca5a5;
+          padding: 0.2rem 0.4rem;
+          border-radius: 8px;
+          transition: all 0.2s;
+          opacity: 0;
+        }
+
+        .task-item:hover .del-btn { opacity: 1; }
+        .del-btn:hover { background: #fef2f2; color: #ef4444; }
+
+        .empty { text-align: center; padding: 3rem 0; color: #f9a8d4; }
+        .empty-icon { font-size: 3rem; margin-bottom: 0.75rem; display: block; animation: floatBlob 3s ease-in-out infinite; }
+        .empty p { font-weight: 700; font-size: 0.95rem; }
+
+        .footer { margin-top: 2rem; text-align: center; font-size: 0.8rem; color: #f9a8d4; font-weight: 600; }
+      `}</style>
+
+      <div className="app">
+        <div className="blob blob1" />
+        <div className="blob blob2" />
+        <div className="blob blob3" />
+        <div className="blob blob4" />
+
+        <div className="container">
+          <div className="header">
+            <span className="crown">🌸</span>
+            <h1 className="title">My Happy List</h1>
+            <span className="mood-tag">{mood}</span>
+          </div>
+
+          <div className="progress-card">
+            <div className="progress-circle">
+              <div className="progress-inner">{percent}%</div>
+            </div>
+            <div className="progress-info">
+              <h3>{doneCount} of {tasks.length} tasks done ✨</h3>
+              <div className="progress-bar">
+                <div className="progress-fill" />
+              </div>
+            </div>
+          </div>
+
+          <div className="input-card">
+            <input
+              className="input-box"
+              placeholder="What's on your mind? 🌟"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addTask()}
+            />
+            <button className="add-btn" onClick={addTask}>+ Add ✨</button>
+          </div>
+
+          <div className="filters">
+            {FILTERS.map((f) => (
+              <button
+                key={f}
+                className={`filter-btn ${filter === f ? "active" : ""}`}
+                onClick={() => setFilter(f)}
+              >
+                {f === "All" ? "🌈 All" : f === "Active" ? "⚡ Active" : "✅ Done"}
+              </button>
+            ))}
+          </div>
+
+          <div className="task-list">
+            {filtered.length === 0 ? (
+              <div className="empty">
+                <span className="empty-icon">🌼</span>
+                <p>Nothing here yet — add something fun!</p>
+              </div>
+            ) : (
+              filtered.map((task) => (
+                <div className={`task-item ${task.done ? "done-item" : ""}`} key={task.id}>
+                  <span className="task-emoji">{task.emoji}</span>
+                  <button
+                    className={`check-btn ${task.done ? "done" : ""}`}
+                    onClick={() => toggleTask(task.id)}
+                  >
+                    {task.done ? "✓" : ""}
+                  </button>
+                  <span className={`task-text ${task.done ? "done" : ""}`}>{task.text}</span>
+                  <button className="del-btn" onClick={() => deleteTask(task.id)}>✕</button>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="footer">made with 💖 just for you</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
